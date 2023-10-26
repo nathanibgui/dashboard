@@ -84,18 +84,45 @@ export default {
     },
   },
   methods: {
-    // Méthodes exigées
-    createUser() {
-      // créer un utilisateur
+    async createUser() {
+      try {
+        // Effectuer une requête POST pour créer un nouvel utilisateur
+        const response = await axios.post('http://localhost:4000/api/users', this.formData);
+        console.log('Utilisateur créé avec succès:', response.data);
+        // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la création de l\'utilisateur :', error);
+      }
     },
-    updateUser() {
-      // mettre à jour l'utilisateur
+    async updateUser() {
+      try {
+        // Effectuer une requête PUT pour mettre à jour l'utilisateur existant
+        const response = await axios.put(`http://localhost:4000/api/users/1`, this.formData);
+        console.log('Utilisateur mis à jour avec succès:', response.data);
+        // Mettez en œuvre la logique nécessaire après la mise à jour de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
+      }
     },
-    getUser() {
-      //obtenir les détails de l'utilisateur
+    async getUser() {
+      try {
+        // Effectuer une requête GET pour obtenir les détails de l'utilisateur
+        const response = await axios.get(`http://localhost:4000/api/users/1`);
+        console.log('Détails de l\'utilisateur récupérés avec succès:', response.data);
+        // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la récupération des détails de l\'utilisateur :', error);
+      }
     },
-    supprimerUser() {
-      // supprimer l'utilisateur
+    async supprimerUser() {
+      try {
+        // Effectuer une requête DELETE pour supprimer l'utilisateur
+        const response = await axios.delete(`http://localhost:4000/api/users/1`);
+        console.log('Utilisateur supprimé avec succès:', response.data);
+        // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la suppression de l\'utilisateur :', error);
+      }
     },
     async submitUser() {
       const email = this.formData.email;
