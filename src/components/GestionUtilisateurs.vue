@@ -17,26 +17,40 @@
           Customers
         </router-link>
       </div>
-
-      <h2 v-if="userExists">Bonjour : {{ userExists }}</h2>
     </div>
 
-    <div class="container mt-4">
+    <div class="container mt-4" v-if="!userExists">
       <div class="row">
 
-        <div class="col-md-9">
-          <!-- Votre formulaire ici -->
-          <form @submit.prevent="submitUser">
-            <div class="user-form">
-              <div class="form-group">
-                <label for="email">Email :</label>
-                <input type="email" id="email" v-model="formData.email" required>
-              </div>
-              <div class="form-group">
-                <label for="username">Nom d'utilisateur :</label>
-                <input type="text" id="username" v-model="formData.username" required>
-              </div>
-              <button type="submit">Récupérer les données utilisateur</button>
+        <div class="col-6">
+          <h2 class="text-center"> Connexion </h2>
+            <form @submit.prevent="submitUser">
+                  <div class="user-form">
+                    <div class="form-group">
+                      <label for="email">Email :</label>
+                      <input type="email" id="email" v-model="formData.email" required>
+                    </div>
+                    <div class="form-group">
+                      <label for="username">Nom d'utilisateur :</label>
+                      <input type="text" id="username" v-model="formData.username" required>
+                    </div>
+                    <button  type="submit">Récupérer les données utilisateur</button>
+                  </div>
+            </form>
+        </div>
+        <div class="col-6" >
+          <h2 class="text-center"> Inscription </h2>
+          <form class="  mx-auto user-form">
+            <div class="form-group">
+              <label for="email">Email :</label>
+              <input type="email" class="form-control" id="email" v-model="user.email" placeholder=" entre votre email "/>
+            </div>
+            <div class="form-group">
+              <label for="email">Nom :</label>
+              <input type="text" class="form-control" id="nom" v-model="user.username"  placeholder=" entre votre nom "/>
+            </div>
+            <div class="form-group ">
+              <button class="btn btn-success w-100" type="button" @click="createUser()">Creation</button>
             </div>
           </form>
         </div>
@@ -44,9 +58,39 @@
     </div>
 
     <div v-if="userExists" class="user-info">
-      <h2>Informations de l'utilisateur :</h2>
-      <p>Email : {{ email }}</p>
-      <p>Nom d'utilisateur : {{ username }}</p>
+      <div class="container">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="text-center">Informations de l'utilisateur </h2>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered mt-3 text-center">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Nom d'utilisateur </th>
+                  <th>Email</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+              <tr>
+                <td>{{ userId }}</td>
+                <td>{{ username }}</td>
+                <td>{{ email }}</td>
+                <td class="d-flex  justify-content-center gap-3 ">
+                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>
+                  <a class="btn btn-info">Je Badge !</a>
+                  <button class="btn btn-danger">Supprimer</button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
     </div>
     <div class="user-info" v-if="showErrorMessage">
       <p>L'utilisateur n'existe pas dans la base de données.</p>
@@ -54,7 +98,6 @@
 
   </div>
 </template>
-
 <script>
 
 import moment from 'moment';
@@ -65,17 +108,19 @@ export default {
   name: 'GestionUtilisateurs',
   data() {
     return {
-      selected: this.$route.params.city || '', // Utilisez le paramètre de l'URL comme valeur initiale
-      formData:{
-        email:'',
-        username:'',
+      formData: {
+        email: '',
+        username: '',
       },
+        user : {
+          email: '',
+          username: '',
+        },
+      userId: '',
       userExists: false, // Ajout d'une variable pour suivre si l'utilisateur existe
       email: '', // Variable pour stocker l'e-mail de l'utilisateur
       username: '', // Variable pour stocker le nom d'utilisateur de l'utilisateur
-      showErrorMessage:false,
-      options: ['Paris', 'Nice', 'Barcelone'],
-      meteoDonnee: null
+      showErrorMessage: false,
     };
   },
   computed: {
@@ -86,8 +131,9 @@ export default {
   methods: {
     async createUser() {
       try {
+       let dataUser= this.user ;
         // Effectuer une requête POST pour créer un nouvel utilisateur
-        const response = await axios.post('http://localhost:4000/api/users', this.formData);
+        const response = await axios.post('http://localhost:4000/api/users', {"user":dataUser})
         console.log('Utilisateur créé avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
       } catch (error) {
@@ -133,11 +179,12 @@ export default {
 
         if (response.data) {
           this.userExists = true;
-          this.email=email;
-          this.username=username;
+          this.email = email;
+          this.username = username;
           this.showErrorMessage = false;
-        }
-        else {
+          // Récupérer l'ID de l'utilisateur
+          this.userId = response.data.id;
+        } else {
           this.userExists = false;
           this.showErrorMessage = true;
           // L'utilisateur n'existe pas dans la base de données
@@ -147,53 +194,6 @@ export default {
         this.userExists = false;
         this.showErrorMessage = true;
       }
-    },
-    fetchData() {
-      const requestUrl = 'https://api.openweathermap.org/data/2.5/weather?lat=44.34&lon=10.99&appid=4dcc2218a9bf517e2c98a9da0ca721cd';
-
-      // Fonction de réussite (resolveCallback) en gros response est un objet ou tout est stocke il faut utiliser
-      // un systeme de .data pour recuperer les données
-
-      const resolveCallback = response => {
-        // Traite les données de la réponse ici
-        console.log(response.data);
-      };
-
-      // Fonction d'échec (rejectCallback)
-      const rejectCallback = error => {
-        console.error('Erreur lors de la requête :', error);
-      };
-
-      // Effectuer la requête Axios avec les callbacks de réussite et d'échec
-      axios.get(requestUrl).then(resolveCallback, rejectCallback);
-
-    },
-    search(ville) {
-      // Logique de recherche avec la ville ici (par exemple, appel à une API)
-      // Mettez à jour votre composant avec les résultats de la recherche
-
-      // Dans cet exemple, générons une température aléatoire entre 1 et 32
-      const randomTemperature = Math.floor(Math.random() * 32) + 1;
-
-      switch (ville) {
-        case 'Paris':
-          this.meteoDonnee = { temperature: randomTemperature, city: ville }; // Remplacez cela par les données réelles
-          break;
-        case 'Nice':
-          this.meteoDonnee = {temperature: randomTemperature, city: ville }; // Remplacez cela par les données réelles
-          break;
-        case 'Barcelone':
-          this.meteoDonnee = { temperature: randomTemperature, city: ville }; // Remplacez cela par les données réelles
-          break;
-        default:
-          this.meteoDonnee = null;
-      }
-    }
-  },
-  watch: {
-    '$route.params.city': function(newCity) {
-      this.selected = newCity || ''; // Mettez à jour la ville sélectionnée lorsque le paramètre de l'URL change
-      this.search(newCity); // Effectuez la recherche avec la nouvelle ville
     },
   }
 };

@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import  '../src/assets/main.css'
 import App from './App.vue'
 import { createRouter, createWebHistory } from 'vue-router';
 import GestionUtilisateurs from './components/GestionUtilisateurs.vue';
@@ -9,7 +10,7 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
-            path: '/users/:city',
+            path: '/users',
             component: GestionUtilisateurs,
             props: true,
         },
