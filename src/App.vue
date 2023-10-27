@@ -7,12 +7,11 @@
 
 <script>
 import GestionUtilisateurs from './components/GestionUtilisateurs.vue';
-
 export default {
   components: {
-    GestionUtilisateurs
+    GestionUtilisateurs,
   }
-};
+}
 </script>
 
 <style>

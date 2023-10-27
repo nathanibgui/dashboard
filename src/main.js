@@ -13,7 +13,7 @@ const router = createRouter({
             path: '/users',
             component: GestionUtilisateurs,
             props: true,
-        },
+        }
     ],
 });
 
