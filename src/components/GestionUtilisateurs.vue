@@ -80,9 +80,9 @@
                 <td>{{ email }}</td>
                 <td class="d-flex  justify-content-center gap-3 ">
 <!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
-                  <a class="btn btn-info">Je Badge !</a>
+                  <a class="btn btn-success">Je Badge !</a>
                   <button @click="handel_change" class="btn btn-info" >Modifier</button>
-                  <button class="btn btn-danger">Supprimer</button>
+                  <button @click="supprimerUser(this.userId)" class="btn btn-danger">Supprimer</button>
                 </td>
               </tr>
               </tbody>
@@ -111,7 +111,7 @@
                 <label for="username">Nom d'utilisateur :</label>
                 <input type="text" id="username" v-model="formData.username" required>
               </div>
-              <button type="button" @click="editUser(this.userId)">Modifier </button>
+              <button class="btn btn-info" type="button" @click="editUser(this.userId)">Modifier </button>
             </div>
           </form>
 
@@ -199,10 +199,10 @@ export default {
         console.error('Erreur lors de la récupération des détails de l\'utilisateur :', error);
       }
     },
-    async supprimerUser() {
+    async supprimerUser(id) {
       try {
         // Effectuer une requête DELETE pour supprimer l'utilisateur
-        const response = await axios.delete(`http://localhost:4000/api/users/1`);
+        const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
         console.log('Utilisateur supprimé avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
       } catch (error) {
