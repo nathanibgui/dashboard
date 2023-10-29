@@ -80,7 +80,7 @@
                 <td>{{ email }}</td>
                 <td class="d-flex  justify-content-center gap-3 ">
 <!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
-                  <a class="btn btn-success">Je Badge !</a>
+                  <button @click="createClock()" class="btn btn-success">Je Badge !</button>
                   <button @click="handel_change" class="btn btn-info" >Modifier</button>
                   <button @click="supprimerUser(this.userId)" class="btn btn-danger">Supprimer</button>
                 </td>
@@ -140,11 +140,11 @@ export default {
         email: '',
         username: '',
       },
-        user : {
-          email: '',
-          username: '',
-          idUser:'',
-        },
+      user: {
+        email: '',
+        username: '',
+        idUser: '',
+      },
       userId: '',
       userExists: false, // Ajout d'une variable pour suivre si l'utilisateur existe
       email: '', // Variable pour stocker l'e-mail de l'utilisateur
@@ -161,16 +161,32 @@ export default {
   methods: {
     handel_change() {
       this.isEditing = true
-},
+    },
     async createUser() {
       try {
-       let dataUser= this.user ;
+        let dataUser = this.user;
         // Effectuer une requête POST pour créer un nouvel utilisateur
-        const response = await axios.post('http://localhost:4000/api/users', {"user":dataUser})
+        const response = await axios.post('http://localhost:4000/api/users', {"user": dataUser})
         console.log('Utilisateur créé avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
       } catch (error) {
         console.error('Erreur lors de la création de l\'utilisateur :', error);
+      }
+    },
+    async createClock() {
+      try {
+        const currentDate = new Date();
+        const data = {
+          time : currentDate,
+          status:true,
+          user_id: this.userId,
+        }
+        console.log(data);
+        const response = await axios.post('http://localhost:4000/api/clocks',{clock: data});
+        console.log('Clock créée avec succès:', response.data);
+        // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la creation de la clock :', error);
       }
     },
     async editUser(id) {
@@ -181,7 +197,7 @@ export default {
         };
 
         // Effectuer une requête PUT pour mettre à jour l'utilisateur existant
-        const response = await axios.put(`http://localhost:4000/api/users/${id}`, { user: dataToUpdate });
+        const response = await axios.put(`http://localhost:4000/api/users/${id}`, {user: dataToUpdate});
 
         console.log('Utilisateur mis à jour avec succès :', response.data);
         // Mettez en œuvre la logique nécessaire après la mise à jour de l'utilisateur ici
@@ -192,7 +208,7 @@ export default {
     async getUser() {
       try {
         // Effectuer une requête GET pour obtenir les détails de l'utilisateur
-        const response = await axios.get(`http://localhost:4000/api/users/1`);
+        const response = await axios.get(`http://localhost:4000/api/users/${this.userId}`);
         console.log('Détails de l\'utilisateur récupérés avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
       } catch (error) {
@@ -223,7 +239,7 @@ export default {
           this.showErrorMessage = false;
           // Récupérer l'ID de l'utilisateur
           this.userId = response.data.id;
-           this.getUser();
+          this.getUser();
         } else {
           this.userExists = false;
           this.showErrorMessage = true;
@@ -237,6 +253,7 @@ export default {
     },
   }
 };
+
 </script>
 
 <style scoped>
