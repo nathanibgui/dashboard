@@ -92,6 +92,30 @@
       </div>
     </div>
 
+    <div v-if="userExists" class="user-info">
+      <div class="container">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="text-center">Votre journée </h2>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered mt-3 text-center">
+              <thead>
+              <tr>
+                <th>Temps </th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(clock, index) in this.clocks" :key="index">
+                <td>{{ clock.time }}</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- Formulaire de modification -->
     <div class="user-info" v-if="isEditing">
@@ -145,6 +169,16 @@ export default {
         username: '',
         idUser: '',
       },
+      data : {
+        time : '',
+        status:'',
+        user_id: '',
+      },
+      clocks : {
+        time : '',
+        status:'',
+        user_id: '',
+      },
       userId: '',
       userExists: false, // Ajout d'une variable pour suivre si l'utilisateur existe
       email: '', // Variable pour stocker l'e-mail de l'utilisateur
@@ -187,6 +221,22 @@ export default {
         // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
       } catch (error) {
         console.error('Erreur lors de la creation de la clock :', error);
+      }
+    },
+    async getClock() {
+      try {
+        // Effectuer une requête GET pour obtenir les détails de l'utilisateur
+        const response = await axios.get(`http://localhost:4000/api/clocks/${this.userId}`);
+        this.clocks = response.data;
+        this.clocks.time = moment(this.clocks.time).format('HH:mm:ss');
+
+        console.log('Détails du temps de travail pointé --> récupérés avec succès:', response.data);
+        console.log('Détails du ffff:', this.clocks);
+
+
+        // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la récupération des temps de travail :', error);
       }
     },
     async editUser(id) {
@@ -239,7 +289,9 @@ export default {
           this.showErrorMessage = false;
           // Récupérer l'ID de l'utilisateur
           this.userId = response.data.id;
+
           this.getUser();
+          this.getClock();
         } else {
           this.userExists = false;
           this.showErrorMessage = true;
