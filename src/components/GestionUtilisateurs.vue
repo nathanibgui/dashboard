@@ -107,7 +107,7 @@
               </thead>
               <tbody>
               <tr v-for="(clock, index) in this.clocks" :key="index">
-                <td>{{ clock.time }}</td>
+                <td>{{ formattedDate(clock.time) }}</td>
               </tr>
               </tbody>
             </table>
@@ -188,9 +188,6 @@ export default {
     };
   },
   computed: {
-    formattedDate() {
-      return moment().locale('fr').format('LL');
-    },
   },
   methods: {
     handel_change() {
@@ -223,15 +220,16 @@ export default {
         console.error('Erreur lors de la creation de la clock :', error);
       }
     },
+    formattedDate(date) {
+      return moment(date).format('H:mm');
+    },
     async getClock() {
       try {
         // Effectuer une requête GET pour obtenir les détails de l'utilisateur
         const response = await axios.get(`http://localhost:4000/api/clocks/${this.userId}`);
         this.clocks = response.data;
-        this.clocks.time = moment(this.clocks.time).format('HH:mm:ss');
-
         console.log('Détails du temps de travail pointé --> récupérés avec succès:', response.data);
-        console.log('Détails du ffff:', this.clocks);
+        console.log('Détails du ffff:', this.clocks[0]['time']);
 
 
         // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
