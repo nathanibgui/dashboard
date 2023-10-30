@@ -80,7 +80,7 @@
                 <td>{{ formData.email }}</td>
                 <td class="d-flex  justify-content-center gap-3 ">
 <!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
-                  <button @click="createClock(this.userId)" class="btn btn-success">Je Badge !</button>
+                  <button @click="badgeClick()" class="btn btn-success">Je Badge !</button>
                   <button @click="handel_change" class="btn btn-info" >Modifier</button>
                   <button @click="supprimerUser(this.userId)" class="btn btn-danger">Supprimer</button>
                 </td>
@@ -106,15 +106,39 @@
               </tr>
               </thead>
               <tbody>
+
               <tr v-for="(clock, index) in this.clocks" :key="index">
                 <td>{{ formattedDate(clock.time) }}</td>
               </tr>
+
               </tbody>
             </table>
           </div>
         </div>
       </div>
-    </div>
+      <div class="card">
+        <div class="card-header">
+          <h2 class="text-center">Vos working times </h2>
+        </div>
+        <div class="card-body">
+          <table class="table table-bordered mt-3 text-center">
+            <thead>
+            <tr>
+              <th>WT  <button type="button" @click="this.getWorkingTimes"> Voir</button></th>
+            </tr>
+            </thead>
+            <tbody>
+
+            <tr v-for="(working, index) in this.workingTimeData" :key="index">
+              <td>{{ formattedDate(working.start)}}</td>
+              <td>{{ formattedDate(working.end)}}</td>
+            </tr>
+
+            </tbody>
+          </table>
+        </div>
+      </div>
+      </div>
 
 
     <!-- Formulaire de modification -->
@@ -150,14 +174,16 @@
   </div>
 </template>
 <script>
+let nbClick =0 ;
+
 
 import moment from 'moment';
 import axios from 'axios';
 //import {response} from "express";
 
-
 export default {
   name: 'GestionUtilisateurs',
+
   data() {
     return {
       formData: {
@@ -179,12 +205,19 @@ export default {
         status:'',
         user_id: '',
       },
+      workingTimeData :{
+        start:'',
+        end:'',
+        user_id :''
+      },
+
       userId: '',
       userExists: false, // Ajout d'une variable pour suivre si l'utilisateur existe
       email: '', // Variable pour stocker l'e-mail de l'utilisateur
       username: '', // Variable pour stocker le nom d'utilisateur de l'utilisateur
       showErrorMessage: false,
       isEditing: false,
+      startDay : null,
     };
   },
   computed: {
@@ -193,6 +226,62 @@ export default {
     handel_change() {
       this.isEditing = true
     },
+
+    async createClock(user_id) {
+      try {
+        const currentDate = new Date();
+        const data = {
+          time: currentDate,
+        }
+        console.log(data);
+        const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`, { clock: data });
+        console.log('Clock créée avec succès:', response.data);
+      } catch (error) {
+        console.error('Erreur lors de la création de la clock :', error);
+      }
+    },
+
+    badgeClick() {
+      const today = moment().format('YYYY-MM-DD H:mm');
+      console.log(today)
+      nbClick+=1 ;
+      if (nbClick === 1) {
+        this.createClock(this.userId);
+        this.startDay = today;
+        console.log(this.workingTimeData)
+
+      }
+      if (nbClick === 2) {
+        this.createClock(this.userId);
+        this.workingTimeData.start = this.startDay
+        this.workingTimeData.end = today
+        this.workingTimeData.user_id =this.userId
+
+        console.log(this.workingTimeData)
+         axios.post(`http://localhost:4000/api/working_times/${this.userId}`,{working_time: this.workingTimeData})
+          .then(response => {
+        //  //Traitement à effectuer après la création du working time
+            console.log('Working time créé avec succès:', response.data);
+        }).catch(error => {
+          console.error('Erreur lors de la création du working time :', error);
+           });
+        this.getWorkingTimes()
+      }
+    },
+
+    async getWorkingTimes() {
+      try {
+        // Effectuer une requête GET pour obtenir les détails de l'utilisateur
+        const response = await axios.get(`http://localhost:4000/api/working_times/${this.userId}`);
+        this.workingTimeData = response.data;
+        console.log(this.workingTimeData)
+        // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la récupération des temps de travail :', error);
+      }
+    },
+
+
     async createUser() {
       try {
         let dataUser = this.user;
@@ -205,23 +294,11 @@ export default {
         console.error('Erreur lors de la création de l\'utilisateur :', error);
       }
     },
-    async createClock(user_id) {
-      try {
-        const currentDate = new Date();
-        const data = {
-          time : currentDate
-        }
-        console.log(data);
-        const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`,{clock: data});
-        console.log('Clock créée avec succès:', response.data);
-        // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
-      } catch (error) {
-        console.error('Erreur lors de la creation de la clock :', error);
-      }
-    },
+
     formattedDate(date) {
       return moment(date).format('DD-MM-YYYY H:mm');
     },
+
     async getClock() {
       try {
         // Effectuer une requête GET pour obtenir les détails de l'utilisateur
@@ -273,6 +350,7 @@ export default {
         console.error('Erreur lors de la suppression de l\'utilisateur :', error);
       }
     },
+
     async submitUser() {
       const email = this.formData.email;
       const username = this.formData.username;
