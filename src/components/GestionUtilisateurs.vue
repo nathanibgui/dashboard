@@ -76,11 +76,11 @@
               <tbody>
               <tr>
                 <td>{{ userId }}</td>
-                <td>{{ username }}</td>
-                <td>{{ email }}</td>
+                <td>{{ formData.username }}</td>
+                <td>{{ formData.email }}</td>
                 <td class="d-flex  justify-content-center gap-3 ">
 <!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
-                  <button @click="createClock()" class="btn btn-success">Je Badge !</button>
+                  <button @click="createClock(this.userId)" class="btn btn-success">Je Badge !</button>
                   <button @click="handel_change" class="btn btn-info" >Modifier</button>
                   <button @click="supprimerUser(this.userId)" class="btn btn-danger">Supprimer</button>
                 </td>
@@ -200,20 +200,19 @@ export default {
         const response = await axios.post('http://localhost:4000/api/users', {"user": dataUser})
         console.log('Utilisateur créé avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
+        this.user =''
       } catch (error) {
         console.error('Erreur lors de la création de l\'utilisateur :', error);
       }
     },
-    async createClock() {
+    async createClock(user_id) {
       try {
         const currentDate = new Date();
         const data = {
-          time : currentDate,
-          status:true,
-          user_id: this.userId,
+          time : currentDate
         }
         console.log(data);
-        const response = await axios.post('http://localhost:4000/api/clocks',{clock: data});
+        const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`,{clock: data});
         console.log('Clock créée avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
       } catch (error) {
@@ -221,7 +220,7 @@ export default {
       }
     },
     formattedDate(date) {
-      return moment(date).format('H:mm');
+      return moment(date).format('DD-MM-YYYY H:mm');
     },
     async getClock() {
       try {
@@ -229,8 +228,6 @@ export default {
         const response = await axios.get(`http://localhost:4000/api/clocks/${this.userId}`);
         this.clocks = response.data;
         console.log('Détails du temps de travail pointé --> récupérés avec succès:', response.data);
-        console.log('Détails du ffff:', this.clocks[0]['time']);
-
 
         // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
       } catch (error) {
@@ -249,6 +246,7 @@ export default {
 
         console.log('Utilisateur mis à jour avec succès :', response.data);
         // Mettez en œuvre la logique nécessaire après la mise à jour de l'utilisateur ici
+        this.isEditing =false ;
       } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
       }
@@ -268,6 +266,8 @@ export default {
         // Effectuer une requête DELETE pour supprimer l'utilisateur
         const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
         console.log('Utilisateur supprimé avec succès:', response.data);
+        this.userExists =false ;
+
         // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
       } catch (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur :', error);
