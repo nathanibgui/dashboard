@@ -76,8 +76,8 @@
               <tbody>
               <tr>
                 <td>{{ userId }}</td>
-                <td>{{ formData.username }}</td>
-                <td>{{ formData.email }}</td>
+                <td>{{ username }}</td>
+                <td>{{ email }}</td>
                 <td class="d-flex  justify-content-center gap-3 ">
 <!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
                   <button @click="createClock(this.userId)" class="btn btn-success">Je Badge !</button>
@@ -200,7 +200,6 @@ export default {
         const response = await axios.post('http://localhost:4000/api/users', {"user": dataUser})
         console.log('Utilisateur créé avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
-        this.user =''
       } catch (error) {
         console.error('Erreur lors de la création de l\'utilisateur :', error);
       }
@@ -209,9 +208,9 @@ export default {
       try {
         const currentDate = new Date();
         const data = {
-          time : currentDate
+          time : currentDate,
         }
-        console.log(data);
+        console.log(user_id);
         const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`,{clock: data});
         console.log('Clock créée avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
@@ -220,7 +219,7 @@ export default {
       }
     },
     formattedDate(date) {
-      return moment(date).format('DD-MM-YYYY H:mm');
+      return moment(date).format('H:mm');
     },
     async getClock() {
       try {
@@ -228,6 +227,8 @@ export default {
         const response = await axios.get(`http://localhost:4000/api/clocks/${this.userId}`);
         this.clocks = response.data;
         console.log('Détails du temps de travail pointé --> récupérés avec succès:', response.data);
+        console.log('Détails du ffff:', this.clocks[0]['time']);
+
 
         // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
       } catch (error) {
@@ -246,7 +247,6 @@ export default {
 
         console.log('Utilisateur mis à jour avec succès :', response.data);
         // Mettez en œuvre la logique nécessaire après la mise à jour de l'utilisateur ici
-        this.isEditing =false ;
       } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
       }
@@ -266,8 +266,6 @@ export default {
         // Effectuer une requête DELETE pour supprimer l'utilisateur
         const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
         console.log('Utilisateur supprimé avec succès:', response.data);
-        this.userExists =false ;
-
         // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
       } catch (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur :', error);
