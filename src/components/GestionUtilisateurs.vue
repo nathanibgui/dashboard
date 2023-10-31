@@ -24,19 +24,19 @@
 
         <div class="col-6">
           <h2 class="text-center"> Connexion </h2>
-            <form @submit.prevent="submitUser">
-                  <div class="user-form">
-                    <div class="form-group">
-                      <label for="email">Email :</label>
-                      <input type="email" id="email" v-model="formData.email" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="username">Nom d'utilisateur :</label>
-                      <input type="text" id="username" v-model="formData.username" required>
-                    </div>
-                    <button  type="submit">Récupérer les données utilisateur</button>
-                  </div>
-            </form>
+          <form @submit.prevent="submitUser">
+            <div class="user-form">
+              <div class="form-group">
+                <label for="email">Email :</label>
+                <input type="email" id="email" v-model="formData.email" required>
+              </div>
+              <div class="form-group">
+                <label for="username">Nom d'utilisateur :</label>
+                <input type="text" id="username" v-model="formData.username" required>
+              </div>
+              <button  type="submit">Récupérer les données utilisateur</button>
+            </div>
+          </form>
         </div>
         <div class="col-6" >
           <h2 class="text-center"> Inscription </h2>
@@ -66,22 +66,22 @@
           <div class="card-body">
             <table class="table table-bordered mt-3 text-center">
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nom d'utilisateur </th>
-                  <th>Email</th>
-                  <th>Actions</th>
-                </tr>
+              <tr>
+                <th>ID</th>
+                <th>Nom d'utilisateur </th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
               </thead>
               <tbody>
               <tr>
                 <td>{{ userId }}</td>
-                <td>{{ username }}</td>
-                <td>{{ email }}</td>
+                <td>{{ formData.username }}</td>
+                <td>{{ formData.email }}</td>
                 <td class="d-flex  justify-content-center gap-3 ">
-<!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
-                  <button @click="createClock(this.userId)" class="btn btn-success">Je Badge !</button>
-                  <button @click="handel_change" class="btn btn-info" >Modifier</button>
+                  <!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
+                  <button @click="badgeClick()" class="btn btn-success">Je Badge !</button>
+                  <button type="button" @click="showModel" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Modifier</button>
                   <button @click="supprimerUser(this.userId)" class="btn btn-danger">Supprimer</button>
                 </td>
               </tr>
@@ -106,58 +106,111 @@
               </tr>
               </thead>
               <tbody>
+
               <tr v-for="(clock, index) in this.clocks" :key="index">
                 <td>{{ formattedDate(clock.time) }}</td>
+              </tr>
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <button class="btn btn-info" type="button" @click="this.getWorkingTimes"> Voir mes Working Times</button>
+      <div class="container">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="text-center">Vos working times</h2>
+          </div>
+          <div class="card-body">
+            <table class="table table-bordered mt-3 text-center">
+              <thead>
+              <tr>
+                <th>Début</th>
+                <th>Fin</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="(working, index) in this.workingTimeData" :key="index">
+                <td>{{ working.start}}</td>
+                <td>{{ working.end }}</td>
               </tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
-    </div>
 
-
-    <!-- Formulaire de modification -->
-    <div class="user-info" v-if="isEditing">
-      <div class="container">
-        <div class="card">
-          <div class="card-header">
-            <h2 class="text-center">Modifier l'utilisateur</h2>
-          </div>
-
-          <form >
-            <div class="user-form">
-              <div class="form-group">
-                <label for="email">Email :</label>
-                <input type="email" id="email" v-model="formData.email" required>
-              </div>
-              <div class="form-group">
-                <label for="username">Nom d'utilisateur :</label>
-                <input type="text" id="username" v-model="formData.username" required>
-              </div>
-              <button class="btn btn-info" type="button" @click="editUser(this.userId)">Modifier </button>
-            </div>
-          </form>
-
-        </div>
-      </div>
     </div>
 
     <div class="user-info" v-if="showErrorMessage">
       <p>L'utilisateur n'existe pas dans la base de données.</p>
     </div>
 
+
+
+
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Modifier l'utilisateur</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form >
+              <div class="user-form">
+                <div class="form-group">
+                  <label for="email">Email :</label>
+                  <input type="email" id="email" v-model="formData.email" required>
+                </div>
+                <div class="form-group">
+                  <label for="username">Nom d'utilisateur :</label>
+                  <input type="text" id="username" v-model="formData.username" required>
+                </div>
+                <button class="btn btn-info" type="button" @click="editUser(this.userId)" data-bs-dismiss="modal" aria-label="Close">Modifier </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 <script>
 
+let nbClick =0 ;
+
 import moment from 'moment';
 import axios from 'axios';
-//import {response} from "express";
-
+import 'moment-timezone';
+import { onMounted } from 'vue';
+import * as bootstrap from 'bootstrap';
+import 'bootstrap';
+window.bootstrap = bootstrap;
+let myModal;
 
 export default {
+  setup() {
+
+    onMounted(() => {
+      myModal = new bootstrap.Modal(document.getElementById('staticBackdrop'));
+    });
+
+    const showModel = () => {
+      console.log("tes");
+      myModal.show();
+    };
+
+    return {
+      // ...autres variables et méthodes que vous retournez
+      showModel
+    };
+  },
   name: 'GestionUtilisateurs',
+
   data() {
     return {
       formData: {
@@ -169,30 +222,107 @@ export default {
         username: '',
         idUser: '',
       },
-      data : {
-        time : '',
-        status:'',
+      data: {
+        time: '',
+        status: '',
         user_id: '',
       },
-      clocks : {
-        time : '',
-        status:'',
+      clocks: {
+        time: '',
+        status: '',
         user_id: '',
       },
+      workingTimeData: {
+        start: '',
+        end: '',
+        user_id: ''
+      },
+
       userId: '',
+      workingTime_id: null,
       userExists: false, // Ajout d'une variable pour suivre si l'utilisateur existe
       email: '', // Variable pour stocker l'e-mail de l'utilisateur
       username: '', // Variable pour stocker le nom d'utilisateur de l'utilisateur
       showErrorMessage: false,
       isEditing: false,
+      startDay: null,
     };
   },
-  computed: {
-  },
+  computed: {},
   methods: {
     handel_change() {
       this.isEditing = true
     },
+
+    async createClock(user_id) {
+      try {
+        const currentDate = moment().tz('Europe/Paris');
+        const data = {
+          time: currentDate,
+        }
+        console.log(data);
+        const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`, {clock: data});
+        console.log('Clock créée avec succès:', response.data);
+      } catch (error) {
+        console.error('Erreur lors de la création de la clock :', error);
+      }
+    },
+
+    badgeClick() {
+      const today = moment().format('YYYY-MM-DD H:mm');
+      nbClick += 1;
+
+      if (nbClick == 1) {
+        this.createClock(this.userId);
+        this.startDay = today;
+        this.workingTimeData.start = this.startDay
+        this.workingTimeData.user_id = this.userId
+        this.workingTimeData.end = "2023-10-30T16:34:00Z"
+        console.log(this.workingTimeData)
+
+        axios.post(`http://localhost:4000/api/working_times/${this.userId}`, {working_time: this.workingTimeData})
+            .then(response => {
+              //  //Traitement à effectuer après la création du working time
+              const workingTimeId = response.data.id;
+              console.log('Working time créé avec succès:', response.data);
+              this.workingTime_id = workingTimeId;
+            }).catch(error => {
+          console.error('Erreur lors de la création du working time :', error);
+        });
+      }
+      if (nbClick == 2) {
+        this.createClock(this.userId);
+        this.workingTimeData.end = today
+        console.log(this.workingTime_id)
+
+
+        //JE DOIS RECUPERER L'ID DE WORKING TIME ET LE PASSER EN PARAM
+        axios.put(`http://localhost:4000/api/working_times/${this.workingTime_id}`, {working_time: this.workingTimeData})
+            .then(response => {
+              //Traitement à effectuer après la création du working time
+              console.log('Working time créé avec succès:', response.data);
+            }).catch(error => {
+          console.error('Erreur lors de la création du working time :', error);
+        });
+        nbClick =0;
+      }
+
+
+    },
+
+    async getWorkingTimes() {
+      try {
+        // Effectuer une requête GET pour obtenir les détails de l'utilisateur
+        const response = await axios.get(`http://localhost:4000/api/working_times/${this.userId}`);
+        this.workingTimeData = response.data;
+        console.log(this.workingTimeData)
+        // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
+      } catch (error) {
+        console.error('Erreur lors de la récupération des temps de travail :', error);
+      }
+    },
+
+
     async createUser() {
       try {
         let dataUser = this.user;
@@ -200,41 +330,28 @@ export default {
         const response = await axios.post('http://localhost:4000/api/users', {"user": dataUser})
         console.log('Utilisateur créé avec succès:', response.data);
         // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
+        this.user = ''
       } catch (error) {
         console.error('Erreur lors de la création de l\'utilisateur :', error);
       }
     },
-    async createClock(user_id) {
-      try {
-        const currentDate = new Date();
-        const data = {
-          time : currentDate,
-        }
-        console.log(user_id);
-        const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`,{clock: data});
-        console.log('Clock créée avec succès:', response.data);
-        // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
-      } catch (error) {
-        console.error('Erreur lors de la creation de la clock :', error);
-      }
-    },
+
     formattedDate(date) {
-      return moment(date).format('H:mm');
+      return moment(date).format('DD-MM-YYYY H:mm');
     },
+
     async getClock() {
       try {
         // Effectuer une requête GET pour obtenir les détails de l'utilisateur
         const response = await axios.get(`http://localhost:4000/api/clocks/${this.userId}`);
         this.clocks = response.data;
-        console.log('Détails du temps de travail pointé --> récupérés avec succès:', response.data);
-        console.log('Détails du ffff:', this.clocks[0]['time']);
-
 
         // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
       } catch (error) {
         console.error('Erreur lors de la récupération des temps de travail :', error);
       }
     },
+
     async editUser(id) {
       try {
         const dataToUpdate = {
@@ -247,10 +364,12 @@ export default {
 
         console.log('Utilisateur mis à jour avec succès :', response.data);
         // Mettez en œuvre la logique nécessaire après la mise à jour de l'utilisateur ici
+        this.isEditing = false;
       } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
       }
     },
+
     async getUser() {
       try {
         // Effectuer une requête GET pour obtenir les détails de l'utilisateur
@@ -261,16 +380,26 @@ export default {
         console.error('Erreur lors de la récupération des détails de l\'utilisateur :', error);
       }
     },
+
     async supprimerUser(id) {
+
+
       try {
-        // Effectuer une requête DELETE pour supprimer l'utilisateur
-        const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
-        console.log('Utilisateur supprimé avec succès:', response.data);
-        // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
-      } catch (error) {
+        if (confirm("Veuillez confirmer votre suppression")) {
+          // Effectuer une requête DELETE pour supprimer l'utilisateur
+          const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
+          console.log('Utilisateur supprimé avec succès:', response.data);
+          this.userExists = false;
+
+          // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
+
+        }
+      }  catch (error) {
         console.error('Erreur lors de la suppression de l\'utilisateur :', error);
       }
     },
+
+
     async submitUser() {
       const email = this.formData.email;
       const username = this.formData.username;
@@ -383,6 +512,3 @@ export default {
   background-color: #0056b3;
 }
 </style>
-
-
-
