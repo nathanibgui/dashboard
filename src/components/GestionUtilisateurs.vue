@@ -128,12 +128,14 @@
               <tr>
                 <th>Début</th>
                 <th>Fin</th>
+                <th>Durée de travail</th>
               </tr>
               </thead>
               <tbody>
               <tr v-for="(working, index) in workingTimeData" :key="index">
-                <td>{{ working.start}}</td>
-                <td>{{ working.end}}</td>
+                <td>{{ formatWorkingTime(working.start) }}</td>
+                <td>{{ formatWorkingTime(working.end) }}</td>
+                <td>{{ calculateWorkingDuration(working.start, working.end) }}</td>
               </tr>
               </tbody>
             </table>
@@ -179,7 +181,7 @@
     </div>
 </template>
 <script>
-let nbClick =0 ;
+let nbClick =0;
 
 import moment from 'moment';
 import axios from 'axios';
@@ -248,10 +250,20 @@ export default {
   },
   computed: {},
   methods: {
-    handel_change() {
-      this.isEditing = true
+
+    calculateWorkingDuration(start, end) {
+      const startTime = moment(start);
+      const endTime = moment(end);
+      const duration = moment.duration(endTime.diff(startTime));
+      const hours = Math.floor(duration.asHours());
+      const minutes = duration.minutes();
+
+      return `${hours} heures ${minutes} minutes`;
     },
 
+    formatWorkingTime(date) {
+      return moment(date).subtract(1, 'hour').format('YYYY-MM-DD HH:mm');
+    },
     async createClock(user_id) {
       try {
         const currentDate = moment().tz('Europe/Paris');
@@ -268,9 +280,8 @@ export default {
 
     badgeClick() {
       const today = moment().format('YYYY-MM-DD H:mm');
-      nbClick += 1;
 
-      if (nbClick == 1) {
+      if (nbClick === 0) {
         this.createClock(this.userId);
         this.startDay = today;
         this.workingTimeData.start = this.startDay
@@ -284,28 +295,28 @@ export default {
               const workingTimeId = response.data.id;
               console.log('Working time créé avec succès:', response.data);
               this.workingTime_id = workingTimeId;
+              nbClick = 1;
             }).catch(error => {
           console.error('Erreur lors de la création du working time :', error);
         });
+
       }
-      if (nbClick == 2) {
+      else if (nbClick == 1) {
         this.createClock(this.userId);
         this.workingTimeData.end = today
         console.log(this.workingTime_id)
-
+        console.log("boucle 2")
 
         //JE DOIS RECUPERER L'ID DE WORKING TIME ET LE PASSER EN PARAM
         axios.put(`http://localhost:4000/api/working_times/${this.workingTime_id}`, {working_time: this.workingTimeData})
             .then(response => {
               //Traitement à effectuer après la création du working time
-              console.log('Working time créé avec succès:', response.data);
+              console.log('Working time a été PUT avec succès:', response.data);
             }).catch(error => {
           console.error('Erreur lors de la création du working time :', error);
         });
-        nbClick =0;
       }
-
-
+      nbClick = 0;
     },
 
   async getWorkingTimes() {
