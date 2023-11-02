@@ -21,7 +21,6 @@
 
     <div class="container mt-4" v-if="!userExists">
       <div class="row">
-
         <div class="col-6">
           <h2 class="text-center"> Connexion </h2>
           <form @submit.prevent="submitUser">
@@ -38,7 +37,8 @@
             </div>
           </form>
         </div>
-        <div class="col-6" >
+
+        <div class="col-6">
           <h2 class="text-center"> Inscription </h2>
           <form class="  mx-auto user-form">
             <div class="form-group">
@@ -79,8 +79,9 @@
                 <td>{{ formData.username }}</td>
                 <td>{{ formData.email }}</td>
                 <td class="d-flex  justify-content-center gap-3 ">
-                  <!--                  <RouterLink :to="{path:'/users/'+userId+'/edit'}" class="btn btn-success" >Modifier</RouterLink>-->
                   <button @click="badgeClick()" class="btn btn-success">Je Badge !</button>
+                  <button class="btn btn-secondary" type="button" @click="showWorkingTimes=true;getWorkingTimes()"> Mes Working Times</button>
+
                   <button type="button" @click="showModel" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Modifier</button>
                   <button @click="supprimerUser(this.userId)" class="btn btn-danger">Supprimer</button>
                 </td>
@@ -108,7 +109,7 @@
               <tbody>
 
               <tr v-for="(clock, index) in this.clocks" :key="index">
-                <td>{{ formattedDate(clock.time) }}</td>
+                <td> Badge n°{{++index}} :  {{ formattedDate(clock.time) }}</td>
               </tr>
 
               </tbody>
@@ -117,9 +118,8 @@
         </div>
       </div>
 
+      <div v-if="showWorkingTimes" class="container">
 
-      <button class="btn btn-info" type="button" @click="this.getWorkingTimes"> Voir mes Working Times</button>
-      <div class="container">
         <div class="card">
           <div class="card-header">
             <h2 class="text-center">Vos working times</h2>
@@ -130,12 +130,15 @@
               <tr>
                 <th>Début</th>
                 <th>Fin</th>
+                <th>Durée de travail</th>
               </tr>
               </thead>
               <tbody>
-              <tr v-for="(working, index) in this.workingTimeData" :key="index">
-                <td>{{ working.start}}</td>
-                <td>{{ working.end }}</td>
+              <tr v-for="(working, index) in workingTimeData" :key="index">
+                <td>{{ formatWorkingTime(working.start) }}</td>
+                <td>{{ formatWorkingTime(working.end) }}</td>
+                <td>{{ calculateWorkingDuration(working.start, working.end) }}</td>
+
               </tr>
               </tbody>
             </table>
@@ -177,9 +180,11 @@
         </div>
       </div>
     </div>
-  </div>
+    </div>
+
 </template>
 <script>
+let nbClick =0;
 
 let nbClick =0 ;
 
@@ -237,12 +242,13 @@ export default {
         end: '',
         user_id: ''
       },
+      showWorkingTimes: false,
 
       userId: '',
       workingTime_id: null,
       userExists: false, // Ajout d'une variable pour suivre si l'utilisateur existe
-      email: '', // Variable pour stocker l'e-mail de l'utilisateur
-      username: '', // Variable pour stocker le nom d'utilisateur de l'utilisateur
+      email: '',
+      username: '',
       showErrorMessage: false,
       isEditing: false,
       startDay: null,
@@ -250,10 +256,20 @@ export default {
   },
   computed: {},
   methods: {
-    handel_change() {
-      this.isEditing = true
+
+    calculateWorkingDuration(start, end) {
+      const startTime = moment(start);
+      const endTime = moment(end);
+      const duration = moment.duration(endTime.diff(startTime));
+      const hours = Math.floor(duration.asHours());
+      const minutes = duration.minutes();
+
+      return `${hours} heures ${minutes} minutes`;
     },
 
+    formatWorkingTime(date) {
+      return moment(date).subtract(1, 'hour').format('YYYY-MM-DD HH:mm');
+    },
     async createClock(user_id) {
       try {
         const currentDate = moment().tz('Europe/Paris');
@@ -263,16 +279,17 @@ export default {
         console.log(data);
         const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`, {clock: data});
         console.log('Clock créée avec succès:', response.data);
+
       } catch (error) {
         console.error('Erreur lors de la création de la clock :', error);
       }
     },
 
+
     badgeClick() {
       const today = moment().format('YYYY-MM-DD H:mm');
-      nbClick += 1;
 
-      if (nbClick == 1) {
+      if (nbClick === 0) {
         this.createClock(this.userId);
         this.startDay = today;
         this.workingTimeData.start = this.startDay
@@ -286,149 +303,144 @@ export default {
               const workingTimeId = response.data.id;
               console.log('Working time créé avec succès:', response.data);
               this.workingTime_id = workingTimeId;
+              nbClick = 1;
             }).catch(error => {
           console.error('Erreur lors de la création du working time :', error);
         });
+
       }
-      if (nbClick == 2) {
+      else if (nbClick == 1) {
         this.createClock(this.userId);
         this.workingTimeData.end = today
         console.log(this.workingTime_id)
-
+        console.log("boucle 2")
 
         //JE DOIS RECUPERER L'ID DE WORKING TIME ET LE PASSER EN PARAM
         axios.put(`http://localhost:4000/api/working_times/${this.workingTime_id}`, {working_time: this.workingTimeData})
             .then(response => {
               //Traitement à effectuer après la création du working time
-              console.log('Working time créé avec succès:', response.data);
+              console.log('Working time a été PUT avec succès:', response.data);
             }).catch(error => {
           console.error('Erreur lors de la création du working time :', error);
         });
-        nbClick =0;
       }
-
-
+      nbClick = 0;
     },
 
-    async getWorkingTimes() {
-      try {
-        // Effectuer une requête GET pour obtenir les détails de l'utilisateur
-        const response = await axios.get(`http://localhost:4000/api/working_times/${this.userId}`);
-        this.workingTimeData = response.data;
-        console.log(this.workingTimeData)
-        // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
-      } catch (error) {
-        console.error('Erreur lors de la récupération des temps de travail :', error);
-      }
-    },
+  async getWorkingTimes() {
+    try {
+      // Effectuer une requête GET pour obtenir les détails de l'utilisateur
+      const response = await axios.get(`http://localhost:4000/api/working_times/${this.userId}`);
+      this.workingTimeData = response.data;
+      console.log(this.workingTimeData)
+      // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
+    } catch (error) {
+      console.error('Erreur lors de la récupération des temps de travail :', error);
+    }
+  },
 
 
-    async createUser() {
-      try {
-        let dataUser = this.user;
-        // Effectuer une requête POST pour créer un nouvel utilisateur
-        const response = await axios.post('http://localhost:4000/api/users', {"user": dataUser})
-        console.log('Utilisateur créé avec succès:', response.data);
-        // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
-        this.user = ''
-      } catch (error) {
-        console.error('Erreur lors de la création de l\'utilisateur :', error);
-      }
-    },
+  async createUser() {
+    try {
+      let dataUser = this.user;
+      // Effectuer une requête POST pour créer un nouvel utilisateur
+      const response = await axios.post('http://localhost:4000/api/users', {"user": dataUser})
+      console.log('Utilisateur créé avec succès:', response.data);
+      // Mettez en œuvre la logique nécessaire après la création de l'utilisateur ici
+      this.user = ''
+    } catch (error) {
+      console.error('Erreur lors de la création de l\'utilisateur :', error);
+    }
+  },
 
-    formattedDate(date) {
-      return moment(date).format('DD-MM-YYYY H:mm');
-    },
+  formattedDate(date) {
+    return moment.tz(date, 'Europe/Paris').format('DD-MM-YYYY H:mm');
+  },
 
-    async getClock() {
-      try {
-        // Effectuer une requête GET pour obtenir les détails de l'utilisateur
-        const response = await axios.get(`http://localhost:4000/api/clocks/${this.userId}`);
-        this.clocks = response.data;
+  async getClock() {
+    try {
+      // Effectuer une requête GET pour obtenir les détails de l'utilisateur
+      const response = await axios.get(`http://localhost:4000/api/clocks/${this.userId}`);
+      this.clocks = response.data;
 
-        // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
-      } catch (error) {
-        console.error('Erreur lors de la récupération des temps de travail :', error);
-      }
-    },
+      // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
+    } catch (error) {
+      console.error('Erreur lors de la récupération des temps de travail :', error);
+    }
+  },
 
-    async editUser(id) {
-      try {
-        const dataToUpdate = {
-          email: this.formData.email,
-          username: this.formData.username,
-        };
+  async editUser(id) {
+    try {
+      const dataToUpdate = {
+        email: this.formData.email,
+        username: this.formData.username,
+      };
 
-        // Effectuer une requête PUT pour mettre à jour l'utilisateur existant
-        const response = await axios.put(`http://localhost:4000/api/users/${id}`, {user: dataToUpdate});
+      // Effectuer une requête PUT pour mettre à jour l'utilisateur existant
+      const response = await axios.put(`http://localhost:4000/api/users/${id}`, {user: dataToUpdate});
 
-        console.log('Utilisateur mis à jour avec succès :', response.data);
-        // Mettez en œuvre la logique nécessaire après la mise à jour de l'utilisateur ici
-        this.isEditing = false;
-      } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
-      }
-    },
+      console.log('Utilisateur mis à jour avec succès :', response.data);
+      // Mettez en œuvre la logique nécessaire après la mise à jour de l'utilisateur ici
+      this.isEditing = false;
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour de l\'utilisateur :', error);
+    }
+  },
 
-    async getUser() {
-      try {
-        // Effectuer une requête GET pour obtenir les détails de l'utilisateur
-        const response = await axios.get(`http://localhost:4000/api/users/${this.userId}`);
-        console.log('Détails de l\'utilisateur récupérés avec succès:', response.data);
-        // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
-      } catch (error) {
-        console.error('Erreur lors de la récupération des détails de l\'utilisateur :', error);
-      }
-    },
+  async getUser() {
+    try {
+      // Effectuer une requête GET pour obtenir les détails de l'utilisateur
+      const response = await axios.get(`http://localhost:4000/api/users/${this.userId}`);
+      console.log('Détails de l\'utilisateur récupérés avec succès:', response.data);
+      // Mettez en œuvre la logique nécessaire après avoir obtenu les détails de l'utilisateur ici
+    } catch (error) {
+      console.error('Erreur lors de la récupération des détails de l\'utilisateur :', error);
+    }
+  },
 
-    async supprimerUser(id) {
-
-
-      try {
-        if (confirm("Veuillez confirmer votre suppression")) {
-          // Effectuer une requête DELETE pour supprimer l'utilisateur
-          const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
+  async supprimerUser(id) {
+    try {
+      if (confirm("Veuillez confirmer votre suppression")) {
+        const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
           console.log('Utilisateur supprimé avec succès:', response.data);
+
           this.userExists = false;
-
-          // Mettez en œuvre la logique nécessaire après la suppression de l'utilisateur ici
-
-        }
-      }  catch (error) {
-        console.error('Erreur lors de la suppression de l\'utilisateur :', error);
       }
-    },
+    }  catch (error) {
+            console.error('Erreur lors de la suppression de l\'utilisateur :', error);
+    }
+  },
 
 
-    async submitUser() {
-      const email = this.formData.email;
-      const username = this.formData.username;
-      try {
-        // Effectuez une requête à l'API pour vérifier si l'utilisateur existe
-        const response = await axios.get(`http://localhost:4000/api/users?email=${email}&username=${username}`);
+  async submitUser() {
+    const email = this.formData.email;
+    const username = this.formData.username;
+    try {
+      // Effectuez une requête à l'API pour vérifier si l'utilisateur existe
+      const response = await axios.get(`http://localhost:4000/api/users?email=${email}&username=${username}`);
 
-        if (response.data) {
-          this.userExists = true;
-          this.email = email;
-          this.username = username;
-          this.showErrorMessage = false;
-          // Récupérer l'ID de l'utilisateur
-          this.userId = response.data.id;
+      if (response.data) {
+        this.userExists = true;
+        this.email = email;
+        this.username = username;
+        this.showErrorMessage = false;
+        // Récupérer l'ID de l'utilisateur
+        this.userId = response.data.id
 
-          this.getUser();
-          this.getClock();
-        } else {
-          this.userExists = false;
-          this.showErrorMessage = true;
-          // L'utilisateur n'existe pas dans la base de données
-          console.log(response.data);
-        }
-      } catch (error) {
+        this.getUser();
+        this.getClock();
+      } else {
         this.userExists = false;
         this.showErrorMessage = true;
+        // L'utilisateur n'existe pas dans la base de données
+        console.log(response.data);
       }
-    },
-  }
+    } catch (error) {
+      this.userExists = false;
+      this.showErrorMessage = true;
+    }
+  },
+}
 };
 
 </script>
