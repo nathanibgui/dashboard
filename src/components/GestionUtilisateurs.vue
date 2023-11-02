@@ -23,19 +23,19 @@
       <div class="row">
         <div class="col-6">
           <h2 class="text-center"> Connexion </h2>
-            <form @submit.prevent="submitUser">
-                  <div class="user-form">
-                    <div class="form-group">
-                      <label for="email">Email :</label>
-                      <input type="email" id="email" v-model="formData.email" required>
-                    </div>
-                    <div class="form-group">
-                      <label for="username">Nom d'utilisateur :</label>
-                      <input type="text" id="username" v-model="formData.username" required>
-                    </div>
-                    <button  type="submit">Récupérer les données utilisateur</button>
-                  </div>
-            </form>
+          <form @submit.prevent="submitUser">
+            <div class="user-form">
+              <div class="form-group">
+                <label for="email">Email :</label>
+                <input type="email" id="email" v-model="formData.email" required>
+              </div>
+              <div class="form-group">
+                <label for="username">Nom d'utilisateur :</label>
+                <input type="text" id="username" v-model="formData.username" required>
+              </div>
+              <button  type="submit">Récupérer les données utilisateur</button>
+            </div>
+          </form>
         </div>
 
         <div class="col-6">
@@ -66,12 +66,12 @@
           <div class="card-body">
             <table class="table table-bordered mt-3 text-center">
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Nom d'utilisateur </th>
-                  <th>Email</th>
-                  <th>Actions</th>
-                </tr>
+              <tr>
+                <th>ID</th>
+                <th>Nom d'utilisateur </th>
+                <th>Email</th>
+                <th>Actions</th>
+              </tr>
               </thead>
               <tbody>
               <tr>
@@ -81,6 +81,7 @@
                 <td class="d-flex  justify-content-center gap-3 ">
                   <button @click="badgeClick()" class="btn btn-success">Je Badge !</button>
                   <button class="btn btn-secondary" type="button" @click="showWorkingTimes=true;getWorkingTimes()"> Mes Working Times</button>
+
                   <button type="button" @click="showModel" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">Modifier</button>
                   <button @click="supprimerUser(this.userId)" class="btn btn-danger">Supprimer</button>
                 </td>
@@ -118,6 +119,7 @@
       </div>
 
       <div v-if="showWorkingTimes" class="container">
+
         <div class="card">
           <div class="card-header">
             <h2 class="text-center">Vos working times</h2>
@@ -136,13 +138,13 @@
                 <td>{{ formatWorkingTime(working.start) }}</td>
                 <td>{{ formatWorkingTime(working.end) }}</td>
                 <td>{{ calculateWorkingDuration(working.start, working.end) }}</td>
+
               </tr>
               </tbody>
             </table>
           </div>
         </div>
       </div>
-
 
     </div>
 
@@ -179,9 +181,12 @@
       </div>
     </div>
     </div>
+
 </template>
 <script>
 let nbClick =0;
+
+let nbClick =0 ;
 
 import moment from 'moment';
 import axios from 'axios';
@@ -238,6 +243,7 @@ export default {
         user_id: ''
       },
       showWorkingTimes: false,
+
       userId: '',
       workingTime_id: null,
       userExists: false, // Ajout d'une variable pour suivre si l'utilisateur existe
@@ -273,10 +279,12 @@ export default {
         console.log(data);
         const response = await axios.post(`http://localhost:4000/api/clocks/${user_id}`, {clock: data});
         console.log('Clock créée avec succès:', response.data);
+
       } catch (error) {
         console.error('Erreur lors de la création de la clock :', error);
       }
     },
+
 
     badgeClick() {
       const today = moment().format('YYYY-MM-DD H:mm');
@@ -395,6 +403,7 @@ export default {
       if (confirm("Veuillez confirmer votre suppression")) {
         const response = await axios.delete(`http://localhost:4000/api/users/${id}`);
           console.log('Utilisateur supprimé avec succès:', response.data);
+
           this.userExists = false;
       }
     }  catch (error) {
@@ -515,6 +524,3 @@ export default {
   background-color: #0056b3;
 }
 </style>
-
-
-
