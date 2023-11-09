@@ -129,7 +129,7 @@
 </template>
 <script>
 
-import InfoUser from './InfoUser.vue';
+import InfoUser from './HomePage.vue';
 import moment from 'moment';
 import axios from 'axios';
 import 'moment-timezone';
