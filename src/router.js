@@ -1,21 +1,24 @@
-import GestionUtilisateurs from './components/GestionUtilisateurs.vue'
+import HomePageVue from './components/HomePage.vue';
+import LoginFormVue from './components/User/LoginForm.vue';
 // import WorkingsTime from './components/WorkingsTime.vue'
 import RegisterForm from './components/User/RegisterForm.vue'
 import infoUser  from './components/User/infoUser.vue';
+import profileUser  from './components/User/profileUser.vue';
 // import Charts  from './components/Charts/Charts.vue';
 import { createRouter, createWebHistory } from "vue-router"
 const routes = [
     {
         path: '/',
-        component: GestionUtilisateurs,
+        component: HomePageVue,
         name:'home',
         props: true,
     },
-    // {
-    //     path:'/WorkingsTime/:id',
-    //     component:WorkingsTime ,
-    //     props:true
-    // },
+    {
+        path: '/login',
+        component: LoginFormVue,
+        name:'login',
+        props: true,
+    },
     {
         path:'/register',
         name: 'register',
@@ -23,18 +26,21 @@ const routes = [
         props:true
     },
     {
-        path: '/user/:id/show',
+        path: '/user/:id/show/',
         name: 'infoUser',
         component: infoUser,
-        props: true
+        props: true,
+        children: [
+            {
+                path: 'profile',
+                name: 'profile',
+                component: profileUser,
+                props: true
+            }
+        ]
     },
-    // {
-    //     path: '/Charts',
-    //     name: 'Charts',
-    //     component: Charts,
-    //     props: true
-    // },
     
+
       
 ]
 const router = createRouter({
