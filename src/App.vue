@@ -1,19 +1,19 @@
 <template>
-  <div id="app">
-    <!-- Votre contenu principal ici -->
-    <GestionUtilisateurs />
-  </div>
+
+    <div>
+      <!-- <NavBarPage /> -->
+      <router-view  />
+    </div>
+   
 </template>
 
 <script>
-import GestionUtilisateurs from './components/GestionUtilisateurs.vue';
-export default {
-  components: {
-    GestionUtilisateurs,
-  }
-}
-</script>
+// import NavBarPage from "./components/template/NavBarPage.vue"
 
-<style>
-/* Vos styles CSS ici */
-</style>
+export default {
+components:{
+  // NavBarPage
+}
+
+};
+</script>
